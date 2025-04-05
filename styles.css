@@ -1,0 +1,105 @@
+/* Custom styles */
+@layer components {
+    /* Style for number inputs */
+    input[type="number"]::-webkit-inner-spin-button,
+    input[type="number"]::-webkit-outer-spin-button {
+        -webkit-appearance: none;
+        margin: 0;
+    }
+    
+    /* Animation for alerts */
+    .alert-enter {
+        opacity: 0;
+        transform: translateY(20px);
+    }
+    .alert-enter-active {
+        opacity: 1;
+        transform: translateY(0);
+        transition: all 300ms;
+    }
+    .alert-exit {
+        opacity: 1;
+    }
+    .alert-exit-active {
+        opacity: 0;
+        transition: all 300ms;
+    }
+    
+/* Modal styles */
+.modal {
+    animation: modalFadeIn 0.3s ease-out;
+}
+
+@keyframes modalFadeIn {
+    from { opacity: 0; transform: translateY(-20px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+
+.modal-content {
+    max-height: 90vh;
+    overflow-y: auto;
+}
+
+/* Custom scrollbar */
+    ::-webkit-scrollbar {
+        width: 8px;
+        height: 8px;
+    }
+    ::-webkit-scrollbar-track {
+        background: #f1f1f1;
+        border-radius: 4px;
+    }
+    ::-webkit-scrollbar-thumb {
+        background: #888;
+        border-radius: 4px;
+    }
+    ::-webkit-scrollbar-thumb:hover {
+        background: #555;
+    }
+
+    /* Table row hover effect */
+    .table-row-hover:hover {
+        background-color: #f8fafc;
+        transition: background-color 150ms;
+    }
+
+    /* Button transition */
+    .btn-transition {
+        transition: all 150ms ease-in-out;
+    }
+
+    /* Input focus style */
+    .input-focus:focus {
+        box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.2);
+        border-color: #3b82f6;
+    }
+
+    /* Responsive table container */
+    .table-container {
+        overflow-x: auto;
+        -webkit-overflow-scrolling: touch;
+    }
+}
+
+/* Print styles */
+@media print {
+    nav, button, .no-print {
+        display: none !important;
+    }
+    
+    body {
+        background: none;
+        padding: 0;
+        margin: 0;
+    }
+    
+    table {
+        width: 100%;
+        border-collapse: collapse;
+    }
+    
+    th, td {
+        border: 1px solid #ddd;
+        padding: 8px;
+    }
+}

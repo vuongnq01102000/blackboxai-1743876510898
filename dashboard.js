@@ -25,7 +25,15 @@ async function loadUserData(userId) {
     eventHandlers.setupCoupleManagement();
   } catch (error) {
     console.error('Failed to load user data:', error);
-    showErrorToast('Không thể tải dữ liệu người dùng');
+    const errorDiv = document.createElement('div');
+    errorDiv.className = 'fixed bottom-4 right-4 bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded';
+    errorDiv.innerHTML = `
+        <strong>Lỗi!</strong> ${error.message || 'Không thể tải dữ liệu người dùng'}
+        <span class="absolute top-0 right-0 px-2 py-1 cursor-pointer" onclick="this.parentElement.remove()">
+            &times;
+        </span>
+    `;
+    document.body.appendChild(errorDiv);
   }
 }
 

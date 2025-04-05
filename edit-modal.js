@@ -1,7 +1,10 @@
+import { auth, db } from './firebase.js';
+import { couplesManager } from './couples.js';
+
 // Khởi tạo modal quản lý cặp đôi
 function initCoupleModal() {
-    // Chỉ tạo modal nếu chưa tồn tại
     if (document.getElementById('couple-modal')) return;
+    
     const modal = document.createElement('div');
     modal.id = 'couple-modal';
     modal.className = 'hidden fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50';
@@ -35,59 +38,56 @@ function initCoupleModal() {
         }
     });
 
-    // Render danh sách cặp đôi
-    function renderCouplesList() {
-        const container = document.getElementById('couples-list');
-        container.innerHTML = '';
-        
-        couplesManager.couples.forEach(couple => {
-            const div = document.createElement('div');
-            div.className = 'flex items-center justify-between p-2 border rounded';
-            
-            const input = document.createElement('input');
-            input.type = 'text';
-            input.value = couple.name;
-            input.className = 'flex-1 p-1 border rounded mr-2';
-            
-            const saveBtn = document.createElement('button');
-            saveBtn.className = 'px-2 py-1 bg-blue-500 text-white rounded mr-2';
-            saveBtn.innerHTML = '<i class="fas fa-save"></i>';
-            saveBtn.addEventListener('click', () => {
-                const newName = input.value.trim();
-                if (newName && newName !== couple.name) {
-                    couplesManager.updateCouple(couple.id, newName)
-                        .catch(error => alert('Lỗi khi cập nhật: ' + error.message));
-                }
-            });
-            
-            const deleteBtn = document.createElement('button');
-            deleteBtn.className = 'px-2 py-1 bg-red-500 text-white rounded';
-            deleteBtn.innerHTML = '<i class="fas fa-trash"></i>';
-            deleteBtn.addEventListener('click', () => {
-                if (confirm(`Xóa cặp đôi ${couple.name}?`)) {
-                    couplesManager.removeCouple(couple.id)
-                        .then(() => renderCouplesList())
-                        .catch(error => alert('Lỗi khi xóa: ' + error.message));
-                }
-            });
-            
-            div.appendChild(input);
-            div.appendChild(saveBtn);
-            div.appendChild(deleteBtn);
-            container.appendChild(div);
-        });
-    }
-
-    document.getElementById('edit-couple-names').addEventListener('click', () => {
-        document.getElementById('couple-modal').classList.remove('hidden');
-        renderCouplesList();
-    });
-
     document.getElementById('cancel-couple').addEventListener('click', () => {
         document.getElementById('couple-modal').classList.add('hidden');
     });
+}
 
-    // Modal thông tin thanh toán
+// Render danh sách cặp đôi
+function renderCouplesList() {
+    const container = document.getElementById('couples-list');
+    container.innerHTML = '';
+    
+    couplesManager.couples.forEach(couple => {
+        const div = document.createElement('div');
+        div.className = 'flex items-center justify-between p-2 border rounded';
+        
+        const input = document.createElement('input');
+        input.type = 'text';
+        input.value = couple.name;
+        input.className = 'flex-1 p-1 border rounded mr-2';
+        
+        const saveBtn = document.createElement('button');
+        saveBtn.className = 'px-2 py-1 bg-blue-500 text-white rounded mr-2';
+        saveBtn.innerHTML = '<i class="fas fa-save"></i>';
+        saveBtn.addEventListener('click', () => {
+            const newName = input.value.trim();
+            if (newName && newName !== couple.name) {
+                couplesManager.updateCouple(couple.id, newName)
+                    .catch(error => alert('Lỗi khi cập nhật: ' + error.message));
+            }
+        });
+        
+        const deleteBtn = document.createElement('button');
+        deleteBtn.className = 'px-2 py-1 bg-red-500 text-white rounded';
+        deleteBtn.innerHTML = '<i class="fas fa-trash"></i>';
+        deleteBtn.addEventListener('click', () => {
+            if (confirm(`Xóa cặp đôi ${couple.name}?`)) {
+                couplesManager.removeCouple(couple.id)
+                    .then(() => renderCouplesList())
+                    .catch(error => alert('Lỗi khi xóa: ' + error.message));
+            }
+        });
+        
+        div.appendChild(input);
+        div.appendChild(saveBtn);
+        div.appendChild(deleteBtn);
+        container.appendChild(div);
+    });
+}
+
+// Khởi tạo modal thông tin thanh toán
+function initPaymentModal() {
     const paymentModal = document.createElement('div');
     paymentModal.id = 'payment-modal';
     paymentModal.className = 'hidden fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50';
@@ -112,52 +112,11 @@ function initCoupleModal() {
     `;
     document.body.appendChild(paymentModal);
 
-    // Xử lý sự kiện
-    document.getElementById('edit-couple-names').addEventListener('click', () => {
-        document.getElementById('couple1-input').value = document.getElementById('couple1-name').textContent;
-        document.getElementById('couple2-input').value = document.getElementById('couple2-name').textContent;
-        document.getElementById('couple-modal').classList.remove('hidden');
-    });
-
-    document.getElementById('edit-payment-info').addEventListener('click', () => {
-        document.getElementById('payment-modal').classList.remove('hidden');
-    });
-
-    // Các sự kiện đóng modal
-    document.getElementById('cancel-couple').addEventListener('click', () => {
-        document.getElementById('couple-modal').classList.add('hidden');
-    });
-
     document.getElementById('cancel-payment').addEventListener('click', () => {
         document.getElementById('payment-modal').classList.add('hidden');
     });
 
-    // Lưu thông tin
-    document.getElementById('save-couple').addEventListener('click', saveCoupleNames);
     document.getElementById('save-payment').addEventListener('click', savePaymentInfo);
-}
-
-// Lưu tên cặp đôi
-function saveCoupleNames() {
-    const couple1 = document.getElementById('couple1-input').value;
-    const couple2 = document.getElementById('couple2-input').value;
-    
-    if (!couple1 || !couple2) {
-        alert('Vui lòng nhập đầy đủ tên cho cả hai cặp');
-        return;
-    }
-
-    document.getElementById('couple1-name').textContent = couple1;
-    document.getElementById('couple2-name').textContent = couple2;
-    document.getElementById('couple-modal').classList.add('hidden');
-    
-    // Cập nhật lên Firestore
-    const user = auth.currentUser;
-    if (user) {
-        db.collection('users').doc(user.uid).update({
-            coupleName: couple1
-        });
-    }
 }
 
 // Lưu thông tin thanh toán
@@ -182,12 +141,10 @@ function savePaymentInfo() {
     }
     
     document.getElementById('payment-modal').classList.add('hidden');
-    
-    // Lưu vào localStorage
     localStorage.setItem('paymentInfo', JSON.stringify({ bankAccount, qrCode }));
 }
 
-// Tải thông tin thanh toán khi trang tải
+// Tải thông tin thanh toán
 function loadPaymentInfo() {
     const paymentInfo = JSON.parse(localStorage.getItem('paymentInfo'));
     if (paymentInfo) {
@@ -207,8 +164,21 @@ function loadPaymentInfo() {
     }
 }
 
-// Khởi tạo khi DOM tải xong
-document.addEventListener('DOMContentLoaded', () => {
-    initEditModals();
+// Khởi tạo tất cả modal
+export function initEditModals() {
+    initCoupleModal();
+    initPaymentModal();
     loadPaymentInfo();
-});
+
+    document.getElementById('edit-couple-names')?.addEventListener('click', () => {
+        document.getElementById('couple-modal').classList.remove('hidden');
+        renderCouplesList();
+    });
+
+    document.getElementById('edit-payment-info')?.addEventListener('click', () => {
+        document.getElementById('payment-modal').classList.remove('hidden');
+    });
+}
+
+// Khởi tạo khi DOM tải xong
+document.addEventListener('DOMContentLoaded', initEditModals);
